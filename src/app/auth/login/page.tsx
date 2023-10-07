@@ -1,6 +1,6 @@
 'use client';
 
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import React from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { auth } from '../../../../firebase';
@@ -12,7 +12,7 @@ type InputsType = {
   password: string;
 };
 
-const Register = () => {
+const Login = () => {
   const router = useRouter();
 
   const {
@@ -22,15 +22,13 @@ const Register = () => {
   } = useForm<InputsType>();
 
   const onSubmit: SubmitHandler<InputsType> = async (data) => {
-    await createUserWithEmailAndPassword(auth, data.email, data.password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-
-        router.push('/auth/login');
+    await signInWithEmailAndPassword(auth, data.email, data.password)
+      .then(() => {
+        router.push('/');
       })
       .catch((error) => {
-        if (error.code === 'auth/email-already-in-use') {
-          alert('このemailは既に使用されています');
+        if (error.code === 'auth/invalid-login-credentials') {
+          alert('そのようなユーザーは存在しません');
         } else {
           alert(error.code);
         }
@@ -43,7 +41,7 @@ const Register = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="bg-white p-8 rounded-md shadow-md w-96"
       >
-        <h1 className="mb-4 text-2xl text-gray-700 font-medium">新規登録</h1>
+        <h1 className="mb-4 text-2xl text-gray-700 font-medium">ログイン</h1>
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-600">
@@ -93,20 +91,20 @@ const Register = () => {
             type="submit"
             className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700"
           >
-            新規登録
+            ログイン
           </button>
         </div>
 
         <div className="mt-4 flex flex-col">
           <span className="text-gray-600 text-sm">
-            既にアカウントをお持ちですか？
+            初めてのご利用の方はこちら
           </span>
 
           <Link
-            href={'/auth/login'}
+            href={'/auth/register'}
             className="text-blue-500 text-sm font-bold hover:text-blue-500"
           >
-            ログインページへ
+            新規登録ページへ
           </Link>
         </div>
       </form>
@@ -114,4 +112,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;
