@@ -1,5 +1,7 @@
+"use client";
+
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { ReactNode, createContext, useEffect, useState } from 'react';
+import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../../firebase';
 
 const defaultContextData = {
@@ -48,3 +50,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     </AppContext.Provider>
   );
 };
+
+export const useAppContext = () => {
+  return useContext(AppContext);
+}
