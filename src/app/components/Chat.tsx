@@ -1,23 +1,94 @@
-import React from 'react';
+'use client';
+
+import {
+  Timestamp,
+  addDoc,
+  collection,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+} from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 import { FaPaperPlane } from 'react-icons/fa';
+import { db } from '../../../firebase';
+import { useAppContext } from '@/context/AppContext';
+
+type MessageType = {
+  text: string;
+  sender: string;
+  createdAt: Timestamp;
+};
 
 const Chat = () => {
+  const [inputMessage, setInputMessage] = useState<string>('');
+  const [messages, setMessages] = useState<MessageType[]>([]);
+
+  const { selectedRoom } = useAppContext();
+
+  useEffect(() => {
+    if (selectedRoom) {
+      const fetchMessage = async () => {
+        const roomDocRef = doc(db, 'rooms', selectedRoom);
+
+        const messageCollectionRef = collection(roomDocRef, 'messages');
+
+        const q = query(messageCollectionRef, orderBy('createdAt'));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+          const newMessages = snapshot.docs.map(
+            (doc) => doc.data() as MessageType
+          );
+          setMessages(newMessages);
+        });
+
+        return () => {
+          unsubscribe();
+        };
+      };
+      fetchMessage();
+    }
+  }, [selectedRoom]);
+
+  const sendMessage = async () => {
+    if (!inputMessage.trim()) return;
+
+    const messageData = {
+      text: inputMessage,
+      sender: 'user',
+      createdAt: serverTimestamp(),
+    };
+
+    const roomDocRef = doc(db, 'rooms', 'v87BzuyQXEbc15p0RKyz');
+    const messageCollectionRef = collection(roomDocRef, 'messages');
+
+    await addDoc(messageCollectionRef, messageData);
+  };
+
   return (
     <div className="bg-gray-500 h-full p-4 flex flex-col">
       <h1 className="text-2xl text-white font-semibold mb-4">Room1</h1>
 
       <div className="flex-grow overflow-y-auto mb-4">
-        <div className="text-right">
-          <div className="bg-blue-500 inline-block rounded px-4 py-2">
-            <h1 className="text-white font-medium">hello</h1>
-          </div>
-        </div>
-
-        <div className="text-left">
-          <div className="bg-green-500 inline-block rounded px-4 py-2">
-            <h1 className="text-white font-medium">how are you</h1>
-          </div>
-        </div>
+        {messages.map((message, index) => {
+          return (
+            <div
+              key={index}
+              className={message.sender === 'user' ? 'text-right' : 'text-left'}
+            >
+              <div
+                className={
+                  message.sender === 'user'
+                    ? 'bg-blue-500 inline-block rounded px-4 py-2'
+                    : 'bg-green-500 inline-block rounded px-4 py-2'
+                }
+              >
+                <p className="text-white">{message.text}</p>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="flex-shrink-0 relative">
@@ -25,9 +96,16 @@ const Chat = () => {
           type="text"
           placeholder="send a message"
           className="border-2 rounded w-full p-2 pr-10 focus:outline-none"
+          value={inputMessage}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setInputMessage(e.target.value)
+          }
         />
 
-        <button className='absolute inset-y-0 right-4 flex items-center'>
+        <button
+          className="absolute inset-y-0 right-4 flex items-center"
+          onClick={() => sendMessage()}
+        >
           <FaPaperPlane />
         </button>
       </div>
