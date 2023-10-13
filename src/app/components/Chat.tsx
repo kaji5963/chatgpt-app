@@ -14,6 +14,8 @@ import React, { useEffect, useState } from 'react';
 import { FaPaperPlane } from 'react-icons/fa';
 import { db } from '../../../firebase';
 import { useAppContext } from '@/context/AppContext';
+import LoadingIcons from 'react-loading-icons';
+import OpenAI from 'openai';
 
 type MessageType = {
   text: string;
@@ -24,8 +26,14 @@ type MessageType = {
 const Chat = () => {
   const [inputMessage, setInputMessage] = useState<string>('');
   const [messages, setMessages] = useState<MessageType[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { selectedRoom } = useAppContext();
+
+  const openai = new OpenAI({
+    apiKey: process.env.NEXT_PUBLIC_OPEN_API_KEY,
+    dangerouslyAllowBrowser: true,
+  });
 
   useEffect(() => {
     if (selectedRoom) {
@@ -60,14 +68,26 @@ const Chat = () => {
       createdAt: serverTimestamp(),
     };
 
-    const roomDocRef = doc(db, 'rooms', 'v87BzuyQXEbc15p0RKyz');
+    const roomDocRef = doc(db, 'rooms', selectedRoom!);
     const messageCollectionRef = collection(roomDocRef, 'messages');
-
     await addDoc(messageCollectionRef, messageData);
+
+    const gptResponse = await openai.chat.completions.create({
+      messages: [{ role: 'user', content: inputMessage }],
+      model: "gpt-3.5-turbo-0301",
+    });
+    const botResponse = gptResponse.choices[0].message.content;
+
+    await addDoc(messageCollectionRef, {
+      text: botResponse,
+      sender: 'bot',
+      createdAt: serverTimestamp(),
+    });
   };
 
   return (
     <div className="bg-gray-500 h-full p-4 flex flex-col">
+      {/* <LoadingIcons.SpinningCircles /> */}
       <h1 className="text-2xl text-white font-semibold mb-4">Room1</h1>
 
       <div className="flex-grow overflow-y-auto mb-4">
