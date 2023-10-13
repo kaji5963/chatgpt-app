@@ -2,15 +2,17 @@
 
 import {
   Timestamp,
+  addDoc,
   collection,
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
   where,
 } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { BiLogOut } from 'react-icons/bi';
-import { db } from '../../../firebase';
+import { auth, db } from '../../../firebase';
 import { useAppContext } from '@/context/AppContext';
 
 type RoomType = {
@@ -53,13 +55,32 @@ const Sidebar = () => {
   }, [userId]);
 
   const selectRoom = (roomId: string) => {
-    setSelectedRoom(roomId)
+    setSelectedRoom(roomId);
+  };
+
+  const addNewRoom = async () => {
+    const roomName = prompt('ルーム名を入力してください');
+    if (roomName) {
+      const newRoomRef = collection(db, 'rooms');
+      await addDoc(newRoomRef, {
+        name: roomName,
+        userId: userId,
+        createdAt: serverTimestamp(),
+      });
+    }
+  };
+
+  const handleLogout = () => {
+    auth.signOut();
   }
 
   return (
     <div className=" bg-custom-blue h-full overflow-y-auto px-5 flex flex-col">
       <div className="flex-grow">
-        <div className="cursor-pointer flex justify-evenly items-center border mt-2 rounded-md hover:bg-blue-800 duration-150">
+        <div
+          onClick={addNewRoom}
+          className="cursor-pointer flex justify-evenly items-center border mt-2 rounded-md hover:bg-blue-800 duration-150"
+        >
           <span className="text-white p-4 text-xl">＋</span>
           <h1 className="text-white text-xs font-semibold p-4">New Chat</h1>
         </div>
@@ -80,7 +101,7 @@ const Sidebar = () => {
 
       <div className="text-lg flex items-center justify-evenly mb-2 cursor-pointer pb-2 text-slate-100 hover:bg-slate-700 duration-150">
         <BiLogOut />
-        <span>ログアウト</span>
+        <span onClick={handleLogout}>ログアウト</span>
       </div>
     </div>
   );

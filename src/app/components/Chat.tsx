@@ -72,11 +72,16 @@ const Chat = () => {
     const messageCollectionRef = collection(roomDocRef, 'messages');
     await addDoc(messageCollectionRef, messageData);
 
+    setInputMessage("");
+    setIsLoading(true);
+
     const gptResponse = await openai.chat.completions.create({
       messages: [{ role: 'user', content: inputMessage }],
-      model: "gpt-3.5-turbo-0301",
+      model: 'gpt-3.5-turbo-0301',
     });
     const botResponse = gptResponse.choices[0].message.content;
+
+    setIsLoading(false);
 
     await addDoc(messageCollectionRef, {
       text: botResponse,
@@ -87,7 +92,6 @@ const Chat = () => {
 
   return (
     <div className="bg-gray-500 h-full p-4 flex flex-col">
-      {/* <LoadingIcons.SpinningCircles /> */}
       <h1 className="text-2xl text-white font-semibold mb-4">Room1</h1>
 
       <div className="flex-grow overflow-y-auto mb-4">
@@ -109,6 +113,7 @@ const Chat = () => {
             </div>
           );
         })}
+        {isLoading && <LoadingIcons.SpinningCircles />}
       </div>
 
       <div className="flex-shrink-0 relative">
@@ -120,6 +125,11 @@ const Chat = () => {
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setInputMessage(e.target.value)
           }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              sendMessage();
+            }
+          }}
         />
 
         <button
