@@ -72,7 +72,7 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     auth.signOut();
-  }
+  };
 
   return (
     <div className=" bg-custom-blue h-full overflow-y-auto px-5 flex flex-col">
@@ -99,6 +99,11 @@ const Sidebar = () => {
         </ul>
       </div>
 
+      {user && (
+        <div className="mb-2 p-4 text-slate-100 text-lg font-medium">
+          {user.email}
+        </div>
+      )}
       <div className="text-lg flex items-center justify-evenly mb-2 cursor-pointer pb-2 text-slate-100 hover:bg-slate-700 duration-150">
         <BiLogOut />
         <span onClick={handleLogout}>ログアウト</span>
