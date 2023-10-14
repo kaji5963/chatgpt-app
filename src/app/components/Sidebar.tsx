@@ -106,7 +106,7 @@ const Sidebar = () => {
       )}
       <div className="text-lg flex items-center justify-evenly mb-2 cursor-pointer pb-2 text-slate-100 hover:bg-slate-700 duration-150">
         <BiLogOut />
-        <span onClick={handleLogout}>ログアウト</span>
+        <span onClick={() => handleLogout()}>ログアウト</span>
       </div>
     </div>
   );

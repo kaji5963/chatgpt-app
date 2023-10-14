@@ -10,7 +10,7 @@ import {
   query,
   serverTimestamp,
 } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FaPaperPlane } from 'react-icons/fa';
 import { db } from '../../../firebase';
 import { useAppContext } from '@/context/AppContext';
@@ -29,6 +29,8 @@ const Chat = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { selectedRoom } = useAppContext();
+
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPEN_API_KEY,
@@ -59,6 +61,16 @@ const Chat = () => {
     }
   }, [selectedRoom]);
 
+  useEffect(() => {
+    if (scrollRef.current) {
+      const element = scrollRef.current;
+      element.scrollTo({
+        top: element.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  });
+
   const sendMessage = async () => {
     if (!inputMessage.trim()) return;
 
@@ -72,7 +84,7 @@ const Chat = () => {
     const messageCollectionRef = collection(roomDocRef, 'messages');
     await addDoc(messageCollectionRef, messageData);
 
-    setInputMessage("");
+    setInputMessage('');
     setIsLoading(true);
 
     const gptResponse = await openai.chat.completions.create({
@@ -94,7 +106,7 @@ const Chat = () => {
     <div className="bg-gray-500 h-full p-4 flex flex-col">
       <h1 className="text-2xl text-white font-semibold mb-4">Room1</h1>
 
-      <div className="flex-grow overflow-y-auto mb-4">
+      <div className="flex-grow overflow-y-auto mb-4" ref={scrollRef}>
         {messages.map((message, index) => {
           return (
             <div
@@ -126,7 +138,7 @@ const Chat = () => {
             setInputMessage(e.target.value)
           }
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === 'Enter') {
               sendMessage();
             }
           }}
