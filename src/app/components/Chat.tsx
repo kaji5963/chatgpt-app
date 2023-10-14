@@ -28,7 +28,7 @@ const Chat = () => {
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const { selectedRoom } = useAppContext();
+  const { selectedRoom, selectRoomName } = useAppContext();
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -104,7 +104,9 @@ const Chat = () => {
 
   return (
     <div className="bg-gray-500 h-full p-4 flex flex-col">
-      <h1 className="text-2xl text-white font-semibold mb-4">Room1</h1>
+      <h1 className="text-2xl text-white font-semibold mb-4">
+        {selectRoomName}
+      </h1>
 
       <div className="flex-grow overflow-y-auto mb-4" ref={scrollRef}>
         {messages.map((message, index) => {

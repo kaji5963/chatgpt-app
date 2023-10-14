@@ -24,7 +24,7 @@ type RoomType = {
 const Sidebar = () => {
   const [rooms, setRooms] = useState<RoomType[]>([]);
 
-  const { user, userId, setSelectedRoom, selectedRoom } = useAppContext();
+  const { user, userId, setSelectedRoom, setSelectRoomName } = useAppContext();
 
   useEffect(() => {
     if (user) {
@@ -54,8 +54,9 @@ const Sidebar = () => {
     }
   }, [userId]);
 
-  const selectRoom = (roomId: string) => {
+  const selectRoom = (roomId: string, roomName: string) => {
     setSelectedRoom(roomId);
+    setSelectRoomName(roomName);
   };
 
   const addNewRoom = async () => {
@@ -90,7 +91,7 @@ const Sidebar = () => {
               <li
                 key={room.id}
                 className="cursor-pointer border-b p-4 text-slate-100 hover:bg-slate-700 duration-150"
-                onClick={() => selectRoom(room.id)}
+                onClick={() => selectRoom(room.id, room.name)}
               >
                 {room.name}
               </li>
